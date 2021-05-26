@@ -44,16 +44,16 @@ body {
     overflow: hidden;
     color: #202124;
 }
-#flex-container,
-#update-history-container {
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    flex-wrap: nowrap;
-    justify-content: center;
-    align-items: stretch;
-    margin: 0;
-}
+/*#flex-container,*/
+/*#update-history-container {*/
+/*    position: relative;*/
+/*    display: flex;*/
+/*    flex-direction: column;*/
+/*    flex-wrap: nowrap;*/
+/*    justify-content: center;*/
+/*    align-items: stretch;*/
+/*    margin: 0;*/
+/*}*/
 #update-history-container {
     justify-content: center;
     align-items: stretch;
