@@ -27,12 +27,18 @@
  *  - "assets_path.js": For the assets (image files, sound files) locations.
  *  - "ui.js": For the user interface (menu bar, buttons etc.) of the html page.
  */
+
 'use strict';
 import * as PIXI from 'pixi.js-legacy';
 import 'pixi-sound';
+import FontFaceObserver from 'fontfaceobserver';
 import { PikachuVolleyball } from './pikavolley.js';
 import { ASSETS_PATH } from './assets_path.js';
 import { setUpUI } from './ui.js';
+import { App } from './app';
+import { Gamepad } from './gamepad';
+
+window.PIXI = PIXI;
 
 const settings = PIXI.settings;
 settings.RESOLUTION = window.devicePixelRatio;
@@ -40,19 +46,32 @@ settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
 settings.ROUND_PIXELS = true;
 
 const renderer = PIXI.autoDetectRenderer({
-  width: 432,
-  height: 304,
+  width: window.innerWidth,
+  height: window.innerHeight,
   antialias: false,
   backgroundColor: 0x000000,
   transparent: false,
+  resolution: 1,
 });
 const stage = new PIXI.Container();
 const ticker = new PIXI.Ticker();
 const loader = new PIXI.Loader();
 
+const font = new FontFaceObserver('game-boy');
+
 renderer.view.setAttribute('id', 'game-canvas');
+renderer.plugins.interaction.moveWhenInside = true;
+renderer.plugins.interaction.autoPreventDefault = false;
 document.getElementById('game-canvas-container').appendChild(renderer.view);
-renderer.render(stage); // To make the initial canvas painting stable in the Firefox browser.
+
+window.stage = stage;
+window.renderer = renderer;
+
+const gamePad = new Gamepad();
+const app = new App(renderer, stage, gamePad);
+
+// renderer.render(stage); // To make the initial canvas painting stable in the Firefox browser.
+renderer.render(app.appView);
 
 loader.add(ASSETS_PATH.SPRITE_SHEET);
 for (const prop in ASSETS_PATH.SOUNDS) {
@@ -93,19 +112,25 @@ function setUpInitialUI() {
       // @ts-ignore
       optionsDropdownBtn.disabled = false;
     }
-    loader.load(setup); // setup is called after loader finishes loading
+
+    font.load().then(() => loader.load(setup));
+
     loadingBox.classList.remove('hidden');
     aboutBtn.removeEventListener('click', closeAboutBox);
     closeAboutBtn.removeEventListener('click', closeAboutBox);
   };
   aboutBtn.addEventListener('click', closeAboutBox);
   closeAboutBtn.addEventListener('click', closeAboutBox);
+
+  closeAboutBox();
 }
 
 /**
  * Set up the game and the full UI, and start the game.
  */
 function setup() {
+  gamePad.init(loader.resources);
+
   const pikaVolley = new PikachuVolleyball(stage, loader.resources);
   setUpUI(pikaVolley, ticker);
   start(pikaVolley);
@@ -119,7 +144,30 @@ function start(pikaVolley) {
   ticker.maxFPS = pikaVolley.normalFPS;
   ticker.add(() => {
     pikaVolley.gameLoop();
-    renderer.render(stage);
+    // renderer.render(stage);
+    renderer.render(app.appView);
   });
   ticker.start();
 }
+
+//
+// var keyboardEvent = document.createEvent('KeyboardEvent');
+// var initMethod = typeof keyboardEvent.initKeyboardEvent !== 'undefined' ? 'initKeyboardEvent' : 'initKeyEvent';
+//
+// keyboardEvent[initMethod](
+//   'keydown', // event type: keydown, keyup, keypress
+//   true, // bubbles
+//   true, // cancelable
+//   window, // view: should be window
+//   false, // ctrlKey
+//   false, // altKey
+//   false, // shiftKey
+//   false, // metaKey
+//   90, // keyCode: unsigned long - the virtual key code, else 0
+//   0, // charCode: unsigned long - the Unicode character associated with the depressed key, else 0
+// );
+//
+// setTimeout(() => {
+//   console.log("enter");
+//   document.querySelector('#game-canvas').dispatchEvent(keyboardEvent);
+// }, 10000)

@@ -7,6 +7,7 @@ export const ASSETS_PATH = {
   SPRITE_SHEET: '../resources/assets/images/sprite_sheet.json',
   TEXTURES: {},
   SOUNDS: {},
+  GAMEPADS: {},
 };
 
 const TEXTURES = ASSETS_PATH.TEXTURES;

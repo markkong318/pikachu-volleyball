@@ -127,6 +127,7 @@ class Key {
    * @param {KeyboardEvent} event
    */
   downHandler(event) {
+    console.log(`down: ${event.code}`);
     if (event.code === this.value) {
       this.isDown = true;
       this.isUp = false;
@@ -139,6 +140,7 @@ class Key {
    * @param {KeyboardEvent} event
    */
   upHandler(event) {
+    console.log(`up: ${event.code}`);
     if (event.code === this.value) {
       this.isDown = false;
       this.isUp = true;
