@@ -60,7 +60,7 @@ export class Gamepad extends Container {
     dPadView.interactive = true;
 
     let lastDPadPress;
-    let isDPadPress = false;
+    let isDPadPressed = false;
 
     const dPadButton = new PIXI.Sprite(PIXI.Texture.WHITE);
     dPadButton.anchor.x = 0.5;
@@ -68,13 +68,13 @@ export class Gamepad extends Container {
     dPadButton.x = 0;
     dPadButton.y = 0;
     dPadButton.width = 180;
-    dPadButton.height = 180;
+    dPadButton.height = 220;
     dPadButton.buttonMode = true;
     dPadButton.interactive = true;
     dPadButton.on('pointermove', evt => {
       console.log("pointermove")
 
-      if (!isDPadPress) {
+      if (!isDPadPressed) {
         return;
       }
 
@@ -84,7 +84,7 @@ export class Gamepad extends Container {
     dPadButton.on('pointerdown', evt => {
       console.log("pointerdown")
 
-      isDPadPress = true;
+      isDPadPressed = true;
 
       const {x, y} = evt.data.getLocalPosition(dPadView);
       processDPadDown(x, y);
@@ -92,7 +92,7 @@ export class Gamepad extends Container {
     dPadButton.on('pointerup', evt => {
       console.log("pointerup")
 
-      isDPadPress = false;
+      isDPadPressed = false;
       processDPadUp();
     });
     dPadView.addChild(dPadButton);
@@ -156,6 +156,26 @@ export class Gamepad extends Container {
 
       if (lastDPadPress === dPadPress) {
         return;
+      }
+
+      if (lastDPadPress !== PRESS_NONE) {
+        switch (lastDPadPress) {
+          case PRESS_UP:
+            window.dispatchEvent(new KeyboardEvent('keyup', { code: D_PAD_UP_KEY }));
+            break;
+          case PRESS_DOWN:
+            window.dispatchEvent(new KeyboardEvent('keyup', { code: D_PAD_DOWN_KEY }));
+            break;
+          case PRESS_LEFT:
+            window.dispatchEvent(new KeyboardEvent('keyup', { code: D_PAD_LEFT_KEY }));
+            break;
+          case PRESS_RIGHT:
+            window.dispatchEvent(new KeyboardEvent('keyup', { code: D_PAD_RIGHT_KEY }));
+            break;
+          case PRESS_NONE:
+            dPad.text = D_PAD_NONE_TEXT;
+            break;
+        }
       }
 
       lastDPadPress = dPadPress;
