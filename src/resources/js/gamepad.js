@@ -5,22 +5,14 @@ import * as PIXI from 'pixi.js-legacy';
 const GAMEPAD_VIEW_WIDTH = 480;
 const GAMEPAD_VIEW_HEIGHT = 800;
 
-const PRESS_UP = Symbol('up');
-const PRESS_DOWN = Symbol('down');
-const PRESS_LEFT = Symbol('left');
-const PRESS_RIGHT = Symbol('right');
-const PRESS_NONE = Symbol('none');
+const PRESS_UP_IDX = 0;
+const PRESS_DOWN_IDX = 1;
+const PRESS_LEFT_IDX = 2;
+const PRESS_RIGHT_IDX = 3;
 
-const D_PAD_UP_TEXT = 'W';
-const D_PAD_DOWN_TEXT = 'X';
-const D_PAD_LEFT_TEXT = 'A';
-const D_PAD_RIGHT_TEXT = 'D';
-const D_PAD_NONE_TEXT = 'S';
+const D_PAD_PRESSED_KEY = ['KeyR', 'KeyF', 'KeyD', 'KeyG'];
 
-const D_PAD_UP_KEY = 'KeyR';
-const D_PAD_DOWN_KEY = 'KeyF';
-const D_PAD_LEFT_KEY = 'KeyD';
-const D_PAD_RIGHT_KEY = 'KeyG';
+const DEAD_ZONE = 30;
 
 export class Gamepad extends Container {
 
@@ -37,7 +29,7 @@ export class Gamepad extends Container {
 
     const dPadStyle = new PIXI.TextStyle({
       fontFamily: 'game-boy',
-      fontSize: 180,
+      fontSize: 200,
       fontStyle: '',
       fill: ['#44AD9F'],
       wordWrap: true,
@@ -54,222 +46,185 @@ export class Gamepad extends Container {
     });
 
     const dPadView = new Container();
-    dPadView.x = 100;
+    dPadView.x = 120;
     dPadView.y = 150;
-    dPadView.buttonMode = true;
-    dPadView.interactive = true;
 
-    let lastDPadPress;
-    let isDPadPressed = false;
+    const DPadPressed = [false, false, false, false];
+    const DPadPressedBefore = [false, false, false, false,];
 
-    const dPadButton = new PIXI.Sprite(PIXI.Texture.WHITE);
-    dPadButton.anchor.x = 0.5;
-    dPadButton.anchor.y = 0.5;
-    dPadButton.x = 0;
-    dPadButton.y = 0;
-    dPadButton.width = 180;
-    dPadButton.height = 220;
-    dPadButton.buttonMode = true;
-    dPadButton.interactive = true;
-    dPadButton.on('pointermove', evt => {
+    const dPadTouch = new PIXI.Sprite(PIXI.Texture.EMPTY);
+    dPadTouch.anchor.x = 0.5;
+    dPadTouch.anchor.y = 0.5;
+    dPadTouch.x = 0;
+    dPadTouch.y = 0;
+    dPadTouch.width = 180;
+    dPadTouch.height = 220;
+    dPadTouch.buttonMode = true;
+    dPadTouch.interactive = true;
+    dPadTouch.on('pointermove', evt => {
       console.log("pointermove")
-
-      if (!isDPadPressed) {
-        return;
-      }
-
-      const {x, y} = evt.data.getLocalPosition(dPadView);
-      processDPadDown(x, y);
+      updateDPadPressed(evt);
     });
-    dPadButton.on('pointerdown', evt => {
+    dPadTouch.on('pointerdown', evt => {
       console.log("pointerdown")
 
-      isDPadPressed = true;
-
-      const {x, y} = evt.data.getLocalPosition(dPadView);
-      processDPadDown(x, y);
+      startDPadPressed();
+      updateDPadPressed(evt);
     });
-    dPadButton.on('pointerup', evt => {
+    dPadTouch.on('pointerup', evt => {
       console.log("pointerup")
 
-      isDPadPressed = false;
-      processDPadUp();
+      endDPadPressed();
     });
-    dPadView.addChild(dPadButton);
+    dPadView.addChild(dPadTouch);
 
-    const dPad = new PIXI.Text('S', dPadStyle);
-    dPad.anchor.x = 0.5;
-    dPad.anchor.y = 0.5;
-    dPad.x = 0;
-    dPad.y = 0;
-    dPadView.addChild(dPad);
-
-    const dPadUpBtn = new PIXI.Sprite(PIXI.Texture.EMPTY);
-    dPadUpBtn.width = 50;
-    dPadUpBtn.height = 50;
-    dPadUpBtn.anchor.x = 0.5;
-    dPadUpBtn.anchor.y = 0.5;
-    dPadUpBtn.x = 0;
-    dPadUpBtn.y = -40;
-    dPadView.addChild(dPadUpBtn);
-
-    const dPadDownBtn = new PIXI.Sprite(PIXI.Texture.EMPTY);
-    dPadDownBtn.width = 50;
-    dPadDownBtn.height = 50;
-    dPadDownBtn.anchor.x = 0.5;
-    dPadDownBtn.anchor.y = 0.5;
-    dPadDownBtn.x = 0;
-    dPadDownBtn.y = 55;
-    dPadView.addChild(dPadDownBtn);
-
-    const dPadLeftBtn = new PIXI.Sprite(PIXI.Texture.EMPTY);
-    dPadLeftBtn.width = 50;
-    dPadLeftBtn.height = 50;
-    dPadLeftBtn.anchor.x = 0.5;
-    dPadLeftBtn.anchor.y = 0.5;
-    dPadLeftBtn.x = -50;
-    dPadLeftBtn.y = 5;
-    dPadView.addChild(dPadLeftBtn);
-
-    const dPadRightBtn = new PIXI.Sprite(PIXI.Texture.EMPTY);
-    dPadRightBtn.width = 50;
-    dPadRightBtn.height = 50;
-    dPadRightBtn.anchor.x = 0.5;
-    dPadRightBtn.anchor.y = 0.5;
-    dPadRightBtn.x = 50;
-    dPadRightBtn.y = 5;
-    dPadView.addChild(dPadRightBtn);
-
-    const processDPadDown = (x, y) => {
-      let dPadPress;
-      if (x > dPadUpBtn.x - dPadUpBtn.width / 2 && x < dPadUpBtn.x + dPadUpBtn.width && y > dPadUpBtn.y - dPadUpBtn.height / 2 && y < dPadUpBtn.y + dPadUpBtn.height / 2) {
-        dPadPress = PRESS_UP;
-      } else if (x > dPadDownBtn.x - dPadDownBtn.width / 2 && x < dPadDownBtn.x + dPadDownBtn.width && y > dPadDownBtn.y - dPadDownBtn.height / 2 && y < dPadDownBtn.y + dPadDownBtn.height / 2) {
-        dPadPress = PRESS_DOWN;
-      } else if (x > dPadLeftBtn.x - dPadLeftBtn.width / 2 && x < dPadLeftBtn.x + dPadLeftBtn.width && y > dPadLeftBtn.y - dPadLeftBtn.height / 2 && y < dPadLeftBtn.y + dPadLeftBtn.height / 2) {
-        dPadPress = PRESS_LEFT;
-      } else if (x > dPadRightBtn.x - dPadRightBtn.width / 2 && x < dPadRightBtn.x + dPadRightBtn.width && y > dPadRightBtn.y - dPadRightBtn.height / 2 && y < dPadRightBtn.y + dPadRightBtn.height / 2) {
-        dPadPress = PRESS_RIGHT;
-      } else {
-        dPadPress = PRESS_NONE;
+    const startDPadPressed = () => {
+      for (let i = 0; i < DPadPressed.length; i++) {
+        DPadPressed[i] = false;
+        DPadPressedBefore[i] = false;
       }
+    }
 
-      if (lastDPadPress === dPadPress) {
+    const updateDPadPressed = evt => {
+      const {x, y} = evt.data.getLocalPosition(dPadView);
+      // console.log(`(${x}, ${y})`);
+
+      if (Math.hypot(x, y) < 30) {
         return;
       }
 
-      if (lastDPadPress !== PRESS_NONE) {
-        switch (lastDPadPress) {
-          case PRESS_UP:
-            window.dispatchEvent(new KeyboardEvent('keyup', { code: D_PAD_UP_KEY }));
-            break;
-          case PRESS_DOWN:
-            window.dispatchEvent(new KeyboardEvent('keyup', { code: D_PAD_DOWN_KEY }));
-            break;
-          case PRESS_LEFT:
-            window.dispatchEvent(new KeyboardEvent('keyup', { code: D_PAD_LEFT_KEY }));
-            break;
-          case PRESS_RIGHT:
-            window.dispatchEvent(new KeyboardEvent('keyup', { code: D_PAD_RIGHT_KEY }));
-            break;
-          case PRESS_NONE:
-            dPad.text = D_PAD_NONE_TEXT;
-            break;
+      for (let i = 0; i < DPadPressedBefore.length; i++) {
+        DPadPressedBefore[i] = false;
+      }
+
+      const x1 = x;
+      const y1 = y;
+      const x2 = -1;
+      const y2 = 0;
+
+      const dot = x1 * x2 + y1 * y2;
+      const det = x1 * y2 - y1 * x2;
+      const angle = Math.atan2(det, dot) * 180 / Math.PI + 180;
+
+      // console.log(`angle: ${angle}`);
+
+      if (angle < 15 || angle > 345) {
+        // right
+        console.log('→');
+        DPadPressedBefore[PRESS_RIGHT_IDX] = true;
+      } else if (angle >= 15 && angle <= 75) {
+        // up-right
+        console.log('↗︎');
+        DPadPressedBefore[PRESS_UP_IDX] = true;
+        DPadPressedBefore[PRESS_RIGHT_IDX] = true
+      } else if (angle > 75 && angle < 105) {
+        // up
+        console.log('↑');
+        DPadPressedBefore[PRESS_UP_IDX] = true;
+      } else if (angle >= 105 && angle < 165) {
+        // up-left
+        console.log('↖︎');
+        DPadPressedBefore[PRESS_UP_IDX] = true;
+        DPadPressedBefore[PRESS_LEFT_IDX] = true;
+      } else if (angle > 165 && angle < 195) {
+        // left
+        console.log('←');
+        DPadPressedBefore[PRESS_LEFT_IDX] = true;
+      } else if (angle >= 195 && angle <= 255) {
+        // down-left
+        console.log('↙︎');
+        DPadPressedBefore[PRESS_DOWN_IDX] = true;
+        DPadPressedBefore[PRESS_LEFT_IDX] = true;
+      } else if (angle > 255 && angle < 285) {
+        // down
+        console.log('↓');
+        DPadPressedBefore[PRESS_DOWN_IDX] = true;
+      } else if (angle >= 285 && angle <= 345) {
+        // down-right
+        console.log('↘︎');
+        DPadPressedBefore[PRESS_DOWN_IDX] = true;
+        DPadPressedBefore[PRESS_RIGHT_IDX] = true;
+      }
+
+      for (let i = 0; i < DPadPressed.length; i++) {
+        if (DPadPressedBefore[i] && !DPadPressed[i]) {
+          window.dispatchEvent(new KeyboardEvent('keydown', { code: D_PAD_PRESSED_KEY[i] }));
+        } else if (!DPadPressedBefore[i] && DPadPressed[i]) {
+          window.dispatchEvent(new KeyboardEvent('keyup', { code: D_PAD_PRESSED_KEY[i] }));
+        }
+
+        DPadPressed[i] = DPadPressedBefore[i];
+      }
+    }
+
+    const endDPadPressed = () => {
+      for (let i = 0; i < DPadPressed.length; i++) {
+        if (DPadPressed[i]) {
+          window.dispatchEvent(new KeyboardEvent('keyup', { code: D_PAD_PRESSED_KEY[i] }));
         }
       }
-
-      lastDPadPress = dPadPress;
-
-      switch (dPadPress) {
-        case PRESS_UP:
-          window.dispatchEvent(new KeyboardEvent('keydown', { code: D_PAD_UP_KEY }));
-          dPad.text = D_PAD_UP_TEXT;
-          break;
-        case PRESS_DOWN:
-          window.dispatchEvent(new KeyboardEvent('keydown', { code: D_PAD_DOWN_KEY }));
-          dPad.text = D_PAD_DOWN_TEXT;
-          break;
-        case PRESS_LEFT:
-          window.dispatchEvent(new KeyboardEvent('keydown', { code: D_PAD_LEFT_KEY }));
-          dPad.text = D_PAD_LEFT_TEXT;
-          break;
-        case PRESS_RIGHT:
-          window.dispatchEvent(new KeyboardEvent('keydown', { code: D_PAD_RIGHT_KEY }));
-          dPad.text = D_PAD_RIGHT_TEXT;
-          break;
-        case PRESS_NONE:
-          dPad.text = D_PAD_NONE_TEXT;
-          break;
-      }
-    };
-
-    const processDPadUp = () => {
-      if (lastDPadPress === D_PAD_NONE_TEXT) {
-        return;
-      }
-
-      switch (lastDPadPress) {
-        case PRESS_UP:
-          window.dispatchEvent(new KeyboardEvent('keyup', { code: D_PAD_UP_KEY }));
-          break;
-        case PRESS_DOWN:
-          window.dispatchEvent(new KeyboardEvent('keyup', { code: D_PAD_DOWN_KEY }));
-          break;
-        case PRESS_LEFT:
-          window.dispatchEvent(new KeyboardEvent('keyup', { code: D_PAD_LEFT_KEY }));
-          break;
-        case PRESS_RIGHT:
-          window.dispatchEvent(new KeyboardEvent('keyup', { code: D_PAD_RIGHT_KEY }));
-          break;
-        case PRESS_NONE:
-          dPad.text = D_PAD_NONE_TEXT;
-          break;
-      }
-
-      lastDPadPress = D_PAD_NONE_TEXT;
-
-      dPad.text = D_PAD_NONE_TEXT;
     }
+
+    const dPadText = new PIXI.Text('S', dPadStyle);
+    dPadText.anchor.x = 0.5;
+    dPadText.anchor.y = 0.5;
+    dPadText.x = 0;
+    dPadText.y = -7;
+    dPadView.addChild(dPadText);
+
+
+
+    const gr  = new PIXI.Graphics();
+    gr.beginFill(0xffffff);
+    gr.drawCircle(0, 0, 30);
+    gr.endFill();
+    const grt = renderer.generateTexture(gr);
+    const ss = new PIXI.Sprite(grt);
+    ss.anchor.x = 0.5;
+    ss.anchor.y = 0.5;
+    ss.x = 0;
+    ss.y = 0;
+    dPadView.addChild(ss);
 
     this.addChild(dPadView);
 
-    const aBtn = new PIXI.Text('a', btnStyle);
-    aBtn.anchor.x = 0.5;
-    aBtn.anchor.y = 0.5;
-    aBtn.x = 280;
-    aBtn.y = 200;
-    aBtn.buttonMode = true;
-    aBtn.interactive = true;
-    aBtn.on('pointerdown', evt => {
+    const aTouch = new PIXI.Text('a', btnStyle);
+    aTouch.anchor.x = 0.5;
+    aTouch.anchor.y = 0.5;
+    aTouch.x = 280;
+    aTouch.y = 200;
+    aTouch.buttonMode = true;
+    aTouch.interactive = true;
+    aTouch.on('pointerdown', evt => {
       window.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyZ' }));
       evt.target.scale.x = 1.2;
       evt.target.scale.y = 1.2;
     });
-    aBtn.on('pointerup', evt => {
+    aTouch.on('pointerup', evt => {
       window.dispatchEvent(new KeyboardEvent('keyup', { code: 'KeyZ' }));
       evt.target.scale.x = 1;
       evt.target.scale.y = 1;
 
     });
-    this.addChild(aBtn);
+    this.addChild(aTouch);
 
-    const bBtn = new PIXI.Text('b', btnStyle);
-    bBtn.anchor.x = 0.5;
-    bBtn.anchor.y = 0.5;
-    bBtn.x = 400;
-    bBtn.y = 150;
-    bBtn.buttonMode = true;
-    bBtn.interactive = true;
-    bBtn.on('pointerdown', evt => {
+    const bTouch = new PIXI.Text('b', btnStyle);
+    bTouch.anchor.x = 0.5;
+    bTouch.anchor.y = 0.5;
+    bTouch.x = 400;
+    bTouch.y = 150;
+    bTouch.buttonMode = true;
+    bTouch.interactive = true;
+    bTouch.on('pointerdown', evt => {
       window.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyZ' }));
       evt.target.scale.x = 1.2;
       evt.target.scale.y = 1.2;
     });
-    bBtn.on('pointerup', evt => {
+    bTouch.on('pointerup', evt => {
       window.dispatchEvent(new KeyboardEvent('keyup', { code: 'KeyZ' }));
       evt.target.scale.x = 1;
       evt.target.scale.y = 1;
     });
-    this.addChild(bBtn);
+    this.addChild(bTouch);
   }
 }

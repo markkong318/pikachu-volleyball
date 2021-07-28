@@ -67,8 +67,9 @@ export class App {
       this.appView.x = APP_VIEW_WIDTH / 2;
       this.appView.y = 0;
     } else {
+      this.appView.height = this.renderer.height * this.renderer.width / this.appView.width;
       this.appView.width = this.renderer.width;
-      this.appView.height = this.renderer.height;
+      // this.appView.height = this.renderer.height;
     }
   }
 }

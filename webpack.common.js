@@ -7,7 +7,7 @@ const WorkboxPlugin = require('workbox-webpack-plugin');
 module.exports = {
   entry: { main: './src/resources/js/main.js', ko: './src/ko/ko.js' },
   output: {
-    filename: '[name].bundle.js',
+    filename: '[name].[contenthash].bundle.js',
     path: path.resolve(__dirname, 'dist'),
   },
   optimization: {
@@ -27,6 +27,8 @@ module.exports = {
         { from: 'src/en/manifest.json', to: 'en/manifest.json' },
         { from: 'src/ko/manifest.json', to: 'ko/manifest.json' },
         { from: 'src/zh/manifest.json', to: 'zh/manifest.json' },
+        { from: 'src/sp/manifest.json', to: 'sp/manifest.json' },
+        { from: 'src/sp/style.css', to: 'sp/style.css' },
         { from: 'src/resources/style.css', to: 'resources/style.css' },
         { from: 'src/index.html', to: 'index.html' },
         {
@@ -40,6 +42,10 @@ module.exports = {
         {
           from: 'src/zh/update-history/index.html',
           to: 'zh/update-history/index.html',
+        },
+        {
+          from: 'src/sp/game-boy',
+          to: 'sp/game-boy',
         },
       ],
     }),
@@ -73,10 +79,20 @@ module.exports = {
         removeComments: true,
       },
     }),
-    new WorkboxPlugin.GenerateSW({
-      swDest: 'sw.js',
-      cleanupOutdatedCaches: true,
-      skipWaiting: false,
+    new HtmlWebpackPlugin({
+      template: 'src/sp/index.html',
+      filename: 'sp/index.html',
+      chunks: ['runtime', 'main'],
+      chunksSortMode: 'manual',
+      minify: {
+        collapseWhitespace: true,
+        removeComments: true,
+      },
     }),
+    // new WorkboxPlugin.GenerateSW({
+    //   swDest: 'sw.js',
+    //   cleanupOutdatedCaches: true,
+    //   skipWaiting: false,
+    // }),
   ],
 };
