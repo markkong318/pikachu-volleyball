@@ -1,13 +1,3 @@
-/*:root {*/
-/*    !* Pikachu Volleyball's original width: 432px, original height: 304px *!*/
-/*    --aspect-ratio: calc(432 / 304);*/
-/*    --inverse-aspect-ratio: calc(304 / 432);*/
-/*    --canvas-width: 96vmin;*/
-/*    --canvas-height: calc(96vmin * var(--inverse-aspect-ratio));*/
-/*    --font-size: 18px;*/
-/*    --btn-width: calc(5 * var(--font-size));*/
-/*    --btn-height: calc(3 * var(--font-size));*/
-/*}*/
 /* size of iPad screen is 768px x 1024px in portrait mode */
 @media only screen and (min-width: 768px) and (min-height: 768px) {
     :root {
@@ -181,6 +171,8 @@ span.check {
     background-color: transparent;
     color: white;
     animation-duration: 0.5s;
+    left: 50%;
+    transform: translateX(-50%);
 }
 .fade-in-box.update {
     background-color: rgba(226, 230, 36, 0.85);

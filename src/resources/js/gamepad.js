@@ -11,11 +11,11 @@ const PRESS_LEFT_IDX = 2;
 const PRESS_RIGHT_IDX = 3;
 
 const D_PAD_PRESSED_KEY = ['KeyR', 'KeyF', 'KeyD', 'KeyG'];
+const ACTION_KEY = 'KeyZ'
 
-const DEAD_ZONE = 30;
+const DEAD_ZONE = 20;
 
 export class Gamepad extends Container {
-
 
   constructor() {
     super();
@@ -48,6 +48,7 @@ export class Gamepad extends Container {
     const dPadView = new Container();
     dPadView.x = 120;
     dPadView.y = 150;
+    this.addChild(dPadView);
 
     const DPadPressed = [false, false, false, false];
     const DPadPressedBefore = [false, false, false, false,];
@@ -87,9 +88,8 @@ export class Gamepad extends Container {
 
     const updateDPadPressed = evt => {
       const {x, y} = evt.data.getLocalPosition(dPadView);
-      // console.log(`(${x}, ${y})`);
 
-      if (Math.hypot(x, y) < 30) {
+      if (Math.hypot(x, y) < DEAD_ZONE) {
         return;
       }
 
@@ -105,8 +105,6 @@ export class Gamepad extends Container {
       const dot = x1 * x2 + y1 * y2;
       const det = x1 * y2 - y1 * x2;
       const angle = Math.atan2(det, dot) * 180 / Math.PI + 180;
-
-      // console.log(`angle: ${angle}`);
 
       if (angle < 15 || angle > 345) {
         // right
@@ -172,36 +170,20 @@ export class Gamepad extends Container {
     dPadText.y = -7;
     dPadView.addChild(dPadText);
 
-
-
-    const gr  = new PIXI.Graphics();
-    gr.beginFill(0xffffff);
-    gr.drawCircle(0, 0, 30);
-    gr.endFill();
-    const grt = renderer.generateTexture(gr);
-    const ss = new PIXI.Sprite(grt);
-    ss.anchor.x = 0.5;
-    ss.anchor.y = 0.5;
-    ss.x = 0;
-    ss.y = 0;
-    dPadView.addChild(ss);
-
-    this.addChild(dPadView);
-
     const aTouch = new PIXI.Text('a', btnStyle);
     aTouch.anchor.x = 0.5;
     aTouch.anchor.y = 0.5;
-    aTouch.x = 280;
+    aTouch.x = 290;
     aTouch.y = 200;
     aTouch.buttonMode = true;
     aTouch.interactive = true;
     aTouch.on('pointerdown', evt => {
-      window.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyZ' }));
+      window.dispatchEvent(new KeyboardEvent('keydown', { code: ACTION_KEY }));
       evt.target.scale.x = 1.2;
       evt.target.scale.y = 1.2;
     });
     aTouch.on('pointerup', evt => {
-      window.dispatchEvent(new KeyboardEvent('keyup', { code: 'KeyZ' }));
+      window.dispatchEvent(new KeyboardEvent('keyup', { code: ACTION_KEY }));
       evt.target.scale.x = 1;
       evt.target.scale.y = 1;
 
@@ -216,12 +198,12 @@ export class Gamepad extends Container {
     bTouch.buttonMode = true;
     bTouch.interactive = true;
     bTouch.on('pointerdown', evt => {
-      window.dispatchEvent(new KeyboardEvent('keydown', { code: 'KeyZ' }));
+      window.dispatchEvent(new KeyboardEvent('keydown', { code: ACTION_KEY }));
       evt.target.scale.x = 1.2;
       evt.target.scale.y = 1.2;
     });
     bTouch.on('pointerup', evt => {
-      window.dispatchEvent(new KeyboardEvent('keyup', { code: 'KeyZ' }));
+      window.dispatchEvent(new KeyboardEvent('keyup', { code: ACTION_KEY }));
       evt.target.scale.x = 1;
       evt.target.scale.y = 1;
     });

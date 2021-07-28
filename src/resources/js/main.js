@@ -64,14 +64,10 @@ renderer.plugins.interaction.moveWhenInside = true;
 renderer.plugins.interaction.autoPreventDefault = false;
 document.getElementById('game-canvas-container').appendChild(renderer.view);
 
-window.stage = stage;
-window.renderer = renderer;
-
 const gamePad = new Gamepad();
 const app = new App(renderer, stage, gamePad);
 
-// renderer.render(stage); // To make the initial canvas painting stable in the Firefox browser.
-renderer.render(app.appView);
+renderer.render(app.view);
 
 loader.add(ASSETS_PATH.SPRITE_SHEET);
 for (const prop in ASSETS_PATH.SOUNDS) {
@@ -144,8 +140,7 @@ function start(pikaVolley) {
   ticker.maxFPS = pikaVolley.normalFPS;
   ticker.add(() => {
     pikaVolley.gameLoop();
-    // renderer.render(stage);
-    renderer.render(app.appView);
+    renderer.render(app.view);
   });
   ticker.start();
 }
