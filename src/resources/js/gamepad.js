@@ -1,5 +1,3 @@
-'use strict';
-import { Container } from 'pixi.js-legacy';
 import * as PIXI from 'pixi.js-legacy';
 
 const GAMEPAD_VIEW_WIDTH = 480;
@@ -15,7 +13,7 @@ const ACTION_KEY = 'KeyZ'
 
 const DEAD_ZONE = 20;
 
-export class Gamepad extends Container {
+export class Gamepad extends PIXI.Container {
 
   constructor() {
     super();
@@ -45,7 +43,7 @@ export class Gamepad extends Container {
       wordWrapWidth: 440,
     });
 
-    const dPadView = new Container();
+    const dPadView = new PIXI.Container();
     dPadView.x = 120;
     dPadView.y = 150;
     this.addChild(dPadView);
