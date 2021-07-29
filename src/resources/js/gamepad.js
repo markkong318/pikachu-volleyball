@@ -12,6 +12,7 @@ const D_PAD_PRESSED_KEY = ['KeyR', 'KeyF', 'KeyD', 'KeyG'];
 const ACTION_KEY = 'KeyZ'
 
 const DEAD_ZONE = 20;
+const PRESS_ZONE = 90;
 
 export class Gamepad extends PIXI.Container {
 
@@ -107,7 +108,12 @@ export class Gamepad extends PIXI.Container {
     const updateDPadPressed = evt => {
       const {x, y} = evt.data.getLocalPosition(dPadView);
 
-      if (Math.hypot(x, y) < DEAD_ZONE) {
+      const distance = Math.hypot(x, y);
+      if (distance < DEAD_ZONE) {
+        return;
+      }
+
+      if (distance > PRESS_ZONE) {
         return;
       }
 
@@ -202,12 +208,11 @@ export class Gamepad extends PIXI.Container {
     dPadLabel.y = -7;
     dPadView.addChild(dPadLabel);
 
-    // const gr = new PIXI.Graphics();
-    // gr.beginFill(0xffffff);
-    // gr.drawCircle(0, 0, 90);
-    // gr.endFill();
-    // dPadView.addChild(gr)
-
+    // const dPadCircle = new PIXI.Graphics();
+    // dPadCircle.beginFill(0xffffff);
+    // dPadCircle.drawCircle(0, 0, PRESS_ZONE);
+    // dPadCircle.endFill();
+    // dPadView.addChild(dPadCircle)
 
     const aTouch = new PIXI.Text('a', btnStyle);
     aTouch.anchor.x = 0.5;
