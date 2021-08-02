@@ -61,7 +61,6 @@ const font = new FontFaceObserver('game-boy');
 
 renderer.view.setAttribute('id', 'game-canvas');
 renderer.plugins.interaction.moveWhenInside = true;
-renderer.plugins.interaction.autoPreventDefault = false;
 document.getElementById('game-canvas-container').appendChild(renderer.view);
 
 const gamePad = new Gamepad();
