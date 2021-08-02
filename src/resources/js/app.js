@@ -58,10 +58,16 @@ export class App {
 
       this.mask = new PIXI.Graphics();
       this.mask.beginFill(0xffffff);
-      this.mask.drawRect(this.view.x, this.view.y, this.view.width, this.view.height);
+      this.mask.drawRect(
+        this.view.x,
+        this.view.y,
+        this.view.width,
+        this.view.height
+      );
       this.view.mask = this.mask;
     } else {
-      this.view.height = APP_VIEW_HEIGHT * this.renderer.width / APP_VIEW_WIDTH ;
+      this.view.height =
+        (APP_VIEW_HEIGHT * this.renderer.width) / APP_VIEW_WIDTH;
       this.view.width = this.renderer.width;
     }
   }

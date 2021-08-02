@@ -25,7 +25,6 @@ module.exports = {
         },
         { from: 'src/sp/manifest.json', to: 'sp/manifest.json' },
         { from: 'src/sp/style.css', to: 'sp/style.css' },
-        { from: 'src/resources/style.css', to: 'resources/style.css' },
         { from: 'src/index.html', to: 'index.html' },
         {
           from: 'src/sp/game-boy',

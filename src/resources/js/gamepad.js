@@ -9,13 +9,12 @@ const PRESS_LEFT_IDX = 2;
 const PRESS_RIGHT_IDX = 3;
 
 const D_PAD_PRESSED_KEY = ['KeyR', 'KeyF', 'KeyD', 'KeyG'];
-const ACTION_KEY = 'KeyZ'
+const ACTION_KEY = 'KeyZ';
 
 const DEAD_ZONE = 20;
 const PRESS_ZONE = 90;
 
 export class Gamepad extends PIXI.Container {
-
   constructor() {
     super();
   }
@@ -50,7 +49,7 @@ export class Gamepad extends PIXI.Container {
     this.addChild(dPadView);
 
     const dPadPressed = [false, false, false, false];
-    const dPadPressedBefore = [false, false, false, false,];
+    const dPadPressedBefore = [false, false, false, false];
     let dPadLabelText = 'S';
     let isDPadPressed = false;
 
@@ -63,16 +62,18 @@ export class Gamepad extends PIXI.Container {
     dPadTouch.height = 220;
     dPadTouch.buttonMode = true;
     dPadTouch.interactive = true;
-    dPadTouch.on('pointermove', evt => {
-      console.log("pointermove");
+    dPadTouch.on('pointermove', (evt) => {
+      console.log('pointermove');
 
-      if (!isDPadPressed) { return; }
+      if (!isDPadPressed) {
+        return;
+      }
 
       updateDPadPressed(evt);
       renderDPadLabel();
     });
-    dPadTouch.on('pointerdown', evt => {
-      console.log("pointerdown");
+    dPadTouch.on('pointerdown', (evt) => {
+      console.log('pointerdown');
 
       isDPadPressed = true;
 
@@ -80,16 +81,16 @@ export class Gamepad extends PIXI.Container {
       updateDPadPressed(evt);
       renderDPadLabel();
     });
-    dPadTouch.on('pointerup', evt => {
-      console.log("pointerup");
+    dPadTouch.on('pointerup', () => {
+      console.log('pointerup');
 
       isDPadPressed = false;
 
       endDPadPressed();
       renderDPadLabel();
     });
-    dPadTouch.on('pointerupoutside', evt => {
-      console.log("pointerupoutside");
+    dPadTouch.on('pointerupoutside', () => {
+      console.log('pointerupoutside');
 
       isDPadPressed = false;
 
@@ -103,10 +104,10 @@ export class Gamepad extends PIXI.Container {
         dPadPressed[i] = false;
         dPadPressedBefore[i] = false;
       }
-    }
+    };
 
-    const updateDPadPressed = evt => {
-      const {x, y} = evt.data.getLocalPosition(dPadView);
+    const updateDPadPressed = (evt) => {
+      const { x, y } = evt.data.getLocalPosition(dPadView);
 
       const distance = Math.hypot(x, y);
       if (distance < DEAD_ZONE) {
@@ -128,7 +129,7 @@ export class Gamepad extends PIXI.Container {
 
       const dot = x1 * x2 + y1 * y2;
       const det = x1 * y2 - y1 * x2;
-      const angle = Math.atan2(det, dot) * 180 / Math.PI + 180;
+      const angle = (Math.atan2(det, dot) * 180) / Math.PI + 180;
 
       if (angle < 15 || angle > 345) {
         // right
@@ -139,7 +140,7 @@ export class Gamepad extends PIXI.Container {
         // up-right
         console.log('↗︎');
         dPadPressedBefore[PRESS_UP_IDX] = true;
-        dPadPressedBefore[PRESS_RIGHT_IDX] = true
+        dPadPressedBefore[PRESS_RIGHT_IDX] = true;
         dPadLabelText = 'E';
       } else if (angle > 75 && angle < 105) {
         // up
@@ -178,28 +179,34 @@ export class Gamepad extends PIXI.Container {
 
       for (let i = 0; i < dPadPressed.length; i++) {
         if (dPadPressedBefore[i] && !dPadPressed[i]) {
-          window.dispatchEvent(new KeyboardEvent('keydown', { code: D_PAD_PRESSED_KEY[i] }));
+          window.dispatchEvent(
+            new KeyboardEvent('keydown', { code: D_PAD_PRESSED_KEY[i] })
+          );
         } else if (!dPadPressedBefore[i] && dPadPressed[i]) {
-          window.dispatchEvent(new KeyboardEvent('keyup', { code: D_PAD_PRESSED_KEY[i] }));
+          window.dispatchEvent(
+            new KeyboardEvent('keyup', { code: D_PAD_PRESSED_KEY[i] })
+          );
         }
 
         dPadPressed[i] = dPadPressedBefore[i];
       }
-    }
+    };
 
     const endDPadPressed = () => {
       for (let i = 0; i < dPadPressed.length; i++) {
         if (dPadPressed[i]) {
-          window.dispatchEvent(new KeyboardEvent('keyup', { code: D_PAD_PRESSED_KEY[i] }));
+          window.dispatchEvent(
+            new KeyboardEvent('keyup', { code: D_PAD_PRESSED_KEY[i] })
+          );
         }
       }
 
       dPadLabelText = 'S';
-    }
+    };
 
     const renderDPadLabel = () => {
       dPadLabel.text = dPadLabelText;
-    }
+    };
 
     const dPadLabel = new PIXI.Text('S', dPadStyle);
     dPadLabel.anchor.x = 0.5;
@@ -221,13 +228,13 @@ export class Gamepad extends PIXI.Container {
     aTouch.y = 200;
     aTouch.buttonMode = true;
     aTouch.interactive = true;
-    aTouch.on('pointerdown', evt => {
+    aTouch.on('pointerdown', (evt) => {
       window.dispatchEvent(new KeyboardEvent('keydown', { code: ACTION_KEY }));
       evt.target.scale.x = 1.2;
       evt.target.scale.y = 1.2;
       evt.target.text = '\u003c';
     });
-    aTouch.on('pointerup', evt => {
+    aTouch.on('pointerup', (evt) => {
       window.dispatchEvent(new KeyboardEvent('keyup', { code: ACTION_KEY }));
       evt.target.scale.x = 1;
       evt.target.scale.y = 1;
@@ -242,13 +249,13 @@ export class Gamepad extends PIXI.Container {
     bTouch.y = 150;
     bTouch.buttonMode = true;
     bTouch.interactive = true;
-    bTouch.on('pointerdown', evt => {
+    bTouch.on('pointerdown', (evt) => {
       window.dispatchEvent(new KeyboardEvent('keydown', { code: ACTION_KEY }));
       evt.target.scale.x = 1.2;
       evt.target.scale.y = 1.2;
       evt.target.text = '\u003e';
     });
-    bTouch.on('pointerup', evt => {
+    bTouch.on('pointerup', (evt) => {
       window.dispatchEvent(new KeyboardEvent('keyup', { code: ACTION_KEY }));
       evt.target.scale.x = 1;
       evt.target.scale.y = 1;
