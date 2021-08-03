@@ -240,6 +240,12 @@ export class Gamepad extends PIXI.Container {
       evt.target.scale.y = 1;
       evt.target.text = 'a';
     });
+    aTouch.on('pointerupoutside', () => {
+      window.dispatchEvent(new KeyboardEvent('keyup', { code: ACTION_KEY }));
+      aTouch.scale.x = 1;
+      aTouch.scale.y = 1;
+      aTouch.text = 'b';
+    });
     this.addChild(aTouch);
 
     const bTouch = new PIXI.Text('b', btnStyle);
@@ -260,6 +266,12 @@ export class Gamepad extends PIXI.Container {
       evt.target.scale.x = 1;
       evt.target.scale.y = 1;
       evt.target.text = 'b';
+    });
+    bTouch.on('pointerupoutside', () => {
+      window.dispatchEvent(new KeyboardEvent('keyup', { code: ACTION_KEY }));
+      bTouch.scale.x = 1;
+      bTouch.scale.y = 1;
+      bTouch.text = 'b';
     });
     this.addChild(bTouch);
   }
