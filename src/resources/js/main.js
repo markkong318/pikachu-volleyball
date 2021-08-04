@@ -108,7 +108,9 @@ function setUpInitialUI() {
       optionsDropdownBtn.disabled = false;
     }
 
-    font.load().then(() => loader.load(setup));
+    font.load()
+      .then(() => gamePad.init())
+      .then(() => loader.load(setup));
 
     loadingBox.classList.remove('hidden');
     aboutBtn.removeEventListener('click', closeAboutBox);
@@ -124,8 +126,6 @@ function setUpInitialUI() {
  * Set up the game and the full UI, and start the game.
  */
 function setup() {
-  gamePad.init(loader.resources);
-
   const pikaVolley = new PikachuVolleyball(stage, loader.resources);
   setUpUI(pikaVolley, ticker);
   start(pikaVolley);
